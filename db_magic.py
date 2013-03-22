@@ -37,9 +37,10 @@ class DeferredProp(object):
 class FKRelationship(DeferredProp):
     """Generates a one to many or many to one relationship."""
 
-    def __init__(self, target, fk_col, **kw):
+    def __init__(self, target, fk_col, relationship_kw=None, **kw):
         self.target = target
         self.fk_col = fk_col
+        self.relationship_kw = relationship_kw or {}
         self.kw = kw
 
     def _config(self, cls, key):
@@ -59,7 +60,8 @@ class FKRelationship(DeferredProp):
 
         rel = relationship(target_cls, 
                 primaryjoin=fk_col==pk_col, 
-                collection_class=self.kw.get('collection_class', list)
+                collection_class=self.kw.get('collection_class', list),
+                **self.relationship_kw
             )
         setattr(cls, key, rel)
         self._setup_reverse(key, rel, target_cls)
