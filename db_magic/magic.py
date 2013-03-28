@@ -119,9 +119,9 @@ def integer(**kwargs):
     """Convenience macro, return a Column with Integer."""
     return Column(Integer, **kwargs)
 
-def boolean(default=bool()):
+def boolean(default=bool(), **kwargs):
     """Convenience macro, return a Column with Boolean."""
-    return Column(Boolean, default=default)
+    return Column(Boolean, default=default, **kwargs)
 
 def primary_key():
     return Column(Integer(primary_key=True))
