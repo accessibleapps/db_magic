@@ -10,7 +10,6 @@ def perform_upgrade(session, upgrades=None, schema_version=0):
  if current_version >= schema_version:
   return
  for version in xrange(1, schema_version + 1):
-  connection.execute('BEGIN')
   try:
    for item in upgrades[version]:
     connection.execute(item)
@@ -19,7 +18,6 @@ def perform_upgrade(session, upgrades=None, schema_version=0):
    raise
    break
   connection.execute('pragma user_version=%d' % version)
-  connection.execute('COMMIT')
   logger.info("upgraded to schema version %d" % version)
  else:
   logger.warning("No upgrades available to fulfill upgrade request")
