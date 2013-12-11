@@ -12,7 +12,10 @@ def perform_upgrade(session, upgrades=None, schema_version=0):
  for version in xrange(1, schema_version + 1):
   try:
    for item in upgrades[version]:
-    connection.execute(item)
+    if callable(item):
+     item(session, connection)
+    else:
+     connection.execute(item)
   except:
    logger.exception("failed upgrading to version %d" % version)
    raise
