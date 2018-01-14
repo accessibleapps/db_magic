@@ -16,7 +16,7 @@ def _setup_deferred_properties(mapper, class_):
     """Listen for finished mappers and apply DeferredProp
     configurations."""
 
-    for key, value in class_.__dict__.items():
+    for key, value in list(class_.__dict__.items()):
         if isinstance(value, DeferredProp):
             value._config(class_, key)
 
