@@ -10,7 +10,7 @@ setup(
  description = __doc__,
  packages = find_packages(),
  install_requires = [
-  'sqlalchemy',
+  'sqlalchemy<1.4.0',
  ],
  classifiers = [
   'Development Status :: 3 - Alpha',
