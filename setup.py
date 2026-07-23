@@ -9,6 +9,7 @@ setup(
  version = __version__,
  description = __doc__,
  packages = find_packages(),
+ package_data = {"db_magic": ["py.typed"]},
  install_requires = [
   'sqlalchemy<1.4.0',
  ],
