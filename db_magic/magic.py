@@ -10,6 +10,53 @@ from sqlalchemy.types import DateTime
 from sqlalchemy.ext.declarative import declared_attr, declarative_base
 from sqlalchemy import event
 import re
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Generic,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    TypeVar,
+    cast,
+)
+
+_Entity = TypeVar("_Entity", bound="Base")
+_Result = TypeVar("_Result")
+
+
+class _Query(Protocol, Generic[_Result]):
+    def filter_by(self, **kwargs: object) -> "_Query[_Result]": ...
+
+    def order_by(self, *criteria: object) -> "_Query[_Result]": ...
+
+    def all(self) -> List[_Result]: ...
+
+    def first(self) -> Optional[_Result]: ...
+
+    def one(self) -> _Result: ...
+
+    def __iter__(self) -> Iterator[_Result]: ...
+
+
+class _ScopedSession(Protocol):
+    def __call__(self) -> "_ScopedSession": ...
+
+    def add_all(self, instances: Iterable[object]) -> None: ...
+
+    def commit(self) -> None: ...
+
+    def rollback(self) -> None: ...
+
+    def expire_all(self) -> None: ...
+
+    def delete(self, instance: object) -> None: ...
+
+    def query(self, entity: Type[_Entity]) -> _Query[_Entity]: ...
 
 @event.listens_for(mapper, "mapper_configured")
 def _setup_deferred_properties(mapper, class_):
@@ -150,8 +197,27 @@ class Base(object):
             re.sub(r'([A-Z])', lambda m:"_" + m.group(0).lower(), name[1:])
         )
 
-    id = Column(Integer, primary_key=True)
+    id: Optional[int] = cast(Optional[int], Column(Integer, primary_key=True))
     """Surrogate 'id' primary key column."""
+
+    metadata: ClassVar[Any]
+    session: ClassVar[_ScopedSession]
+
+    def __init__(self, **kwargs: object) -> None:
+        """Initialize mapped attributes by keyword."""
+        cls = type(self)
+        for key, value in kwargs.items():
+            if not hasattr(cls, key):
+                raise TypeError(
+                    "%r is an invalid keyword argument for %s"
+                    % (key, cls.__name__)
+                )
+            setattr(self, key, value)
+
+    @classmethod
+    def query(cls: Type[_Entity], **kwargs: object) -> _Query[_Entity]:
+        """Return a query for this mapped entity type."""
+        return cls.session.query(cls).filter_by(**kwargs)
 
     @classmethod
     def setup_database(cls, url, create=False, echo=False, autoflush=False, autocommit=False, **engine_kwargs):
@@ -161,10 +227,22 @@ class Base(object):
         e = create_engine(url, echo=echo, **engine_kwargs)
         if create:
             cls.metadata.create_all(e)
-        cls.session = scoped_session(sessionmaker(e, autocommit=autocommit, autoflush=autoflush))
-        cls.query = staticmethod(lambda **kwargs: cls.session().query(cls).filter_by(**kwargs))
+        cls.session = cast(
+            _ScopedSession,
+            scoped_session(
+                sessionmaker(
+                    e,
+                    autocommit=autocommit,
+                    autoflush=autoflush,
+                )
+            ),
+        )
 
     
         
 
-Entity = declarative_base(cls=Base)
+if TYPE_CHECKING:
+    class Entity(Base):
+        pass
+else:
+    Entity = declarative_base(cls=Base)
