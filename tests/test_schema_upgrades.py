@@ -1,5 +1,6 @@
 """Executable schema-upgrade contracts."""
 
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -31,17 +32,19 @@ def test_perform_upgrade_applies_each_version_on_python_3(tmp_path: Path) -> Non
         schema_version=3,
     )
 
-    columns = {
-        row[1] for row in session.execute("PRAGMA table_info(example)").fetchall()
-    }
+    column_result = session.execute("PRAGMA table_info(example)")
+    assert column_result is not None
+    columns = {row[1] for row in column_result.fetchall()}
     assert columns == {"id", "title", "etag"}
-    assert session.execute("PRAGMA user_version").scalar() == 3
+    version_result = session.execute("PRAGMA user_version")
+    assert version_result is not None
+    assert version_result.scalar() == 3
 
 
 def test_perform_upgrade_rolls_back_failed_version(tmp_path: Path) -> None:
     session = database_session(tmp_path / "rollback.db")
 
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.OperationalError):
         perform_upgrade(
             session,
             upgrades={
@@ -53,8 +56,10 @@ def test_perform_upgrade_rolls_back_failed_version(tmp_path: Path) -> None:
             schema_version=2,
         )
 
-    columns = {
-        row[1] for row in session.execute("PRAGMA table_info(example)").fetchall()
-    }
+    column_result = session.execute("PRAGMA table_info(example)")
+    assert column_result is not None
+    columns = {row[1] for row in column_result.fetchall()}
     assert columns == {"id"}
-    assert session.execute("PRAGMA user_version").scalar() == 1
+    version_result = session.execute("PRAGMA user_version")
+    assert version_result is not None
+    assert version_result.scalar() == 1
