@@ -4,7 +4,8 @@ Small shared conventions for Accessible Apps models and SQLite upgrades, using
 SQLAlchemy 2.0 on Python 3.8 or newer.
 
 `Entity` is a native SQLAlchemy declarative base with an integer `id` and the
-original CamelCase-to-table-name convention. `TableNameMixin` supplies just that
+original CamelCase-to-table-name convention. The Python ID can be `None` before
+insertion; its database primary-key column remains non-nullable. `TableNameMixin` supplies just that
 naming convention for applications with their own declarative base or primary
 key. Models declare columns and relationships with SQLAlchemy's `Mapped`,
 `mapped_column`, `ForeignKey`, and `relationship` APIs directly.

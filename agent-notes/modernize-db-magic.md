@@ -6,7 +6,7 @@ Q approved the research recommendations with "using subagents, make this happen 
 
 ## State
 
-Owner worktree is db_magic-modernize on modernize/db-magic from fetched origin/master. Original checkout and research note are preserved. Three agents own separate consumer worktrees; root owns the library and publication. db_magic has no configured Actions workflows. Consumer PR CI supplies integrated build coverage; actively authored owner tests can run locally under the existing testing exception.
+Owner worktree is db_magic-modernize on modernize/db-magic from fetched origin/master. Original checkout and research note are preserved. Three agents own separate consumer worktrees; root owns the library and publication. Library PR #3 is open. db_magic has no configured Actions workflows and the PR reports no checks. The actively authored tests/test_schema_upgrades.py passed all six cases under Python 3.8 with SQLAlchemy 2.0. Consumer PR CI must supply integrated build coverage.
 
 ## Decisions and why
 
@@ -24,4 +24,16 @@ QCast has independent open PRs for OPML and commit retry work; avoid inheriting 
 
 ## Next step
 
-Commit owner API, supply it to consumer agents, publish the library PR and follow available checks. Complete consumer migrations and pins, inspect diffs, review actual published PRs, follow CI and repair failures, then merge normally and clean task worktrees/branches. Record PR numbers and terminal evidence here without commit IDs.
+Owner API is committed, published, and supplied to agents. Complete consumer migrations and pins, inspect diffs, review actual published PRs, follow CI and repair failures, then merge normally and clean task worktrees/branches. All consumers pin the published owner revision. Merge consumers with executable pins before the breaking owner default-branch change, so Chicken Nugget's old floating requirement is replaced before owner integration. Record PR numbers and terminal evidence here without commit IDs.
+
+## Delivery checkpoint
+
+Chicken Nugget PR #3 is merged after ordinary and protected CI passed on its repaired head. The existing master checkout contains the remote merge and preserves its pre-existing local note-move commit. Task worktree and local/remote branch removed. Review caught current-thread-only disconnect cleanup; native close_all_sessions restores the previous close-all contract without new infrastructure.
+
+QFeed PR #4 has completed review and passed ordinary CI with 91 tests plus executable build; protected Python 3.10 interpreter build is still running. QCast PR #69 is under new-head CI after replacing an invalid relationship Mock fixture and completing ID-based saved-index worker ownership. Its review gate is complete, reusing unchanged coverage and reviewing only the repair delta. Separate QCast PR #68 remains open and unchanged.
+
+No release, tag, or deployment has occurred. Finish current-head CI, merge each passing independent consumer, then merge owner PR #3, verify normal merge topology and consumer pins, integrate locally and clean remaining task worktrees/branches.
+
+## Shared ID typing repair
+
+QCast's repaired CI passes its runtime suite but Pyright reports five unnecessary-None-check errors in download_manager.py. The shared Entity declaration incorrectly typed transient IDs as always int. Correct the owner declaration to Optional[int], with nullable=False explicitly preserving the original database primary key. Do not remove valid transient-ID checks or weaken Pyright. Repin all consumers to the repaired owner; Chicken Nugget already merged its source migration, so its final pin needs an independent follow-up PR. Include this existing note update with the substantive owner correction.

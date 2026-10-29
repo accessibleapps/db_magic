@@ -1,6 +1,7 @@
 """Shared table naming and integer identity conventions."""
 
 import re
+from typing import Optional
 
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
@@ -19,4 +20,4 @@ class TableNameMixin:
 class Entity(TableNameMixin, DeclarativeBase):
     """Declarative base for models using an integer ``id`` primary key."""
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[Optional[int]] = mapped_column(primary_key=True, nullable=False)
